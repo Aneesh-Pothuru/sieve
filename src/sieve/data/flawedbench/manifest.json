@@ -1,0 +1,185 @@
+{
+  "name": "FlawedBench",
+  "version": 1,
+  "description": "Twenty deterministic local tasks with exactly five seeded eval-infrastructure defects.",
+  "expected_findings": {
+    "task-03": "GRADER_FP",
+    "task-07": "TASK_UNSOLVABLE",
+    "task-12": "TASK_UNFAILABLE",
+    "task-15": "GRADER_FN",
+    "task-19": "WEAK_GRADER"
+  },
+  "tasks": [
+    {
+      "id": "task-01",
+      "prompt": "Return the lowercase color of a clear daytime sky.",
+      "oracle": "blue",
+      "grader": {"mode": "normalized", "expected": "blue"},
+      "correct_variants": ["blue", " BLUE "],
+      "wrong_mutations": ["green", "blu"]
+    },
+    {
+      "id": "task-02",
+      "prompt": "Return the sum of 10 and 5.",
+      "oracle": "15",
+      "grader": {"mode": "normalized", "expected": "15"},
+      "correct_variants": ["15", " 15 "],
+      "wrong_mutations": ["14", "16"]
+    },
+    {
+      "id": "task-03",
+      "prompt": "Submit the exact patch status.",
+      "oracle": "patch-ok",
+      "grader": {"mode": "accept_empty_diff", "expected": "patch-ok"},
+      "correct_variants": ["patch-ok", "patch-ok"],
+      "wrong_mutations": ["", "patch-bad", "patch"]
+    },
+    {
+      "id": "task-04",
+      "prompt": "Return the opposite of false.",
+      "oracle": "true",
+      "grader": {"mode": "normalized", "expected": "true"},
+      "correct_variants": ["true", " TRUE "],
+      "wrong_mutations": ["false", "unknown"]
+    },
+    {
+      "id": "task-05",
+      "prompt": "Return the number of letters in cat.",
+      "oracle": "3",
+      "grader": {"mode": "normalized", "expected": "3"},
+      "correct_variants": ["3", " 3 "],
+      "wrong_mutations": ["2", "4"]
+    },
+    {
+      "id": "task-06",
+      "prompt": "Return the extension of report.json.",
+      "oracle": "json",
+      "grader": {"mode": "normalized", "expected": "json"},
+      "correct_variants": ["json", " JSON "],
+      "wrong_mutations": ["txt", "report"]
+    },
+    {
+      "id": "task-07",
+      "prompt": "Return the path created by the fixture.",
+      "oracle": "file:real.txt",
+      "grader": {"mode": "exact", "expected": "file:missing.txt"},
+      "correct_variants": ["file:real.txt"],
+      "wrong_mutations": ["file:other.txt", ""],
+      "metadata": {"seeded_defect": "grader references a nonexistent fixture path"}
+    },
+    {
+      "id": "task-08",
+      "prompt": "Return the first month of the year.",
+      "oracle": "january",
+      "grader": {"mode": "normalized", "expected": "january"},
+      "correct_variants": ["january", " JANUARY "],
+      "wrong_mutations": ["february", "jan"]
+    },
+    {
+      "id": "task-09",
+      "prompt": "Return 2 multiplied by 6.",
+      "oracle": "12",
+      "grader": {"mode": "normalized", "expected": "12"},
+      "correct_variants": ["12", " 12 "],
+      "wrong_mutations": ["8", "14"]
+    },
+    {
+      "id": "task-10",
+      "prompt": "Return the protocol in https://example.test.",
+      "oracle": "https",
+      "grader": {"mode": "normalized", "expected": "https"},
+      "correct_variants": ["https", " HTTPS "],
+      "wrong_mutations": ["http", "example"]
+    },
+    {
+      "id": "task-11",
+      "prompt": "Return the final letter of audit.",
+      "oracle": "t",
+      "grader": {"mode": "normalized", "expected": "t"},
+      "correct_variants": ["t", " T "],
+      "wrong_mutations": ["a", "d"]
+    },
+    {
+      "id": "task-12",
+      "prompt": "Return done only after completing the task.",
+      "oracle": "done",
+      "grader": {"mode": "always_pass", "expected": "done"},
+      "correct_variants": ["done"],
+      "wrong_mutations": ["", "not-done", "cheat", "anything"],
+      "metadata": {"seeded_defect": "null/no-op agent receives full credit"}
+    },
+    {
+      "id": "task-13",
+      "prompt": "Return the number after 20.",
+      "oracle": "21",
+      "grader": {"mode": "normalized", "expected": "21"},
+      "correct_variants": ["21", " 21 "],
+      "wrong_mutations": ["20", "22"]
+    },
+    {
+      "id": "task-14",
+      "prompt": "Return the lowercase form of SIEVE.",
+      "oracle": "sieve",
+      "grader": {"mode": "normalized", "expected": "sieve"},
+      "correct_variants": ["sieve", " SIEVE "],
+      "wrong_mutations": ["filter", "sive"]
+    },
+    {
+      "id": "task-15",
+      "prompt": "Return the correct value of 2+2.",
+      "oracle": "4",
+      "grader": {"mode": "exact", "expected": "5"},
+      "correct_variants": ["4", "four"],
+      "wrong_mutations": ["3", "6"],
+      "label_review": true,
+      "evidence_tier": "bundled-oracle",
+      "metadata": {"seeded_defect": "answer key incorrectly labels 2+2 as 5"}
+    },
+    {
+      "id": "task-16",
+      "prompt": "Return the file separator used in a URL.",
+      "oracle": "/",
+      "grader": {"mode": "normalized", "expected": "/"},
+      "correct_variants": ["/", " / "],
+      "wrong_mutations": ["\\", ":"]
+    },
+    {
+      "id": "task-17",
+      "prompt": "Return the number of days in a standard week.",
+      "oracle": "7",
+      "grader": {"mode": "normalized", "expected": "7"},
+      "correct_variants": ["7", " 7 "],
+      "wrong_mutations": ["5", "8"]
+    },
+    {
+      "id": "task-18",
+      "prompt": "Return the first letter of grader.",
+      "oracle": "g",
+      "grader": {"mode": "normalized", "expected": "g"},
+      "correct_variants": ["g", " G "],
+      "wrong_mutations": ["r", "grade"]
+    },
+    {
+      "id": "task-19",
+      "prompt": "Return safe when the local check passes.",
+      "oracle": "safe",
+      "grader": {
+        "mode": "weak_allowlist",
+        "expected": "safe",
+        "accepted_wrong": ["wrong-1", "wrong-2", "wrong-3", "wrong-4"]
+      },
+      "correct_variants": ["safe", "safe"],
+      "wrong_mutations": ["wrong-1", "wrong-2", "wrong-3", "wrong-4", "wrong-5", "wrong-6"],
+      "metadata": {"seeded_defect": "grader accepts four of six constructed wrong answers"}
+    },
+    {
+      "id": "task-20",
+      "prompt": "Return the number before 100.",
+      "oracle": "99",
+      "grader": {"mode": "normalized", "expected": "99"},
+      "correct_variants": ["99", " 99 "],
+      "wrong_mutations": ["98", "100"]
+    }
+  ]
+}
+

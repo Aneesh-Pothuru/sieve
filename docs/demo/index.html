@@ -1,0 +1,51 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width"><title>SIEVE · FlawedBench</title>
+<style>
+body{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#11100c;color:#f1ead7;margin:0}
+main{max-width:1120px;margin:auto;padding:32px}.hero{border:1px solid #826f32;background:#1b190f;padding:24px}
+h1,h2{color:#f1d76d}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.card{border:1px solid #5d522b;background:#19170f;padding:15px}.critical,.high{color:#ff9b80}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #5d522b;padding:7px;text-align:left}
+.band{font-size:34px;color:#fff}.muted{color:#b6aa82}.ok{color:#9de39f}
+</style></head><body><main>
+<section class="hero"><p class="muted">SIEVE · EVAL INFRASTRUCTURE AUDIT</p>
+<h1>FLAWEDBENCH · 20 tasks · 5 findings</h1>
+<p class="band">TRUST-ADJUSTED SCORE · 80% could be 65%–90%</p>
+<p>Budget 165/200 runs · skipped 0 ·
+$0 · keyless · abstention 0.0%</p>
+<p class="muted">The band is a sensitivity calculation, not a CI. FP is a lower bound over constructed mutations.</p>
+</section><h2>Findings</h2><section class="grid"><article class="card"><p class="muted">task-03</p>
+        <h2 class="high">GRADER_FP</h2>
+        <p>accepted 1/3 constructed wrong answers</p>
+        <p>secondary: —<br>
+        evidence: declared-oracle<br>
+        FP lower bound: yes</p>
+        <code>sieve audit . --task task-03</code></article><article class="card"><p class="muted">task-07</p>
+        <h2 class="high">TASK_UNSOLVABLE</h2>
+        <p>declared oracle solution rejected by the grader</p>
+        <p>secondary: —<br>
+        evidence: declared-oracle<br>
+        FP lower bound: no</p>
+        <code>sieve audit . --task task-07</code></article><article class="card"><p class="muted">task-12</p>
+        <h2 class="critical">TASK_UNFAILABLE</h2>
+        <p>3/3 null/refuse/echo probes accepted</p>
+        <p>secondary: —<br>
+        evidence: declared-oracle<br>
+        FP lower bound: no</p>
+        <code>sieve audit . --task task-12</code></article><article class="card"><p class="muted">task-15</p>
+        <h2 class="high">GRADER_FN</h2>
+        <p>trusted oracle answer rejected; keyed answer is a label-error candidate</p>
+        <p>secondary: LABEL_ERROR<br>
+        evidence: bundled-oracle<br>
+        FP lower bound: no</p>
+        <code>sieve audit . --task task-15</code></article><article class="card"><p class="muted">task-19</p>
+        <h2 class="critical">WEAK_GRADER</h2>
+        <p>accepted 4/6 constructed wrong answers</p>
+        <p>secondary: —<br>
+        evidence: declared-oracle<br>
+        FP lower bound: yes</p>
+        <code>sieve audit . --task task-19</code></article></section>
+<h2>Measured grader FP/FN · Wilson 95% CI</h2>
+<table><tr><th>task</th><th>FP count</th><th>FP rate [CI]</th><th>FN count</th><th>FN rate [CI]</th></tr><tr><td>task-01</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-02</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-03</td><td>1/3</td><td>33.3% [6.1%, 79.2%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-04</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-05</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-06</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-07</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>1/1</td><td>100.0% [20.7%, 100.0%]</td></tr><tr><td>task-08</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-09</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-10</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-11</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-12</td><td>4/4</td><td>100.0% [51.0%, 100.0%]</td><td>0/1</td><td>0.0% [0.0%, 79.3%]</td></tr><tr><td>task-13</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-14</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-15</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>2/2</td><td>100.0% [34.2%, 100.0%]</td></tr><tr><td>task-16</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-17</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-18</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-19</td><td>4/6</td><td>66.7% [30.0%, 90.3%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-20</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td><td>0/2</td><td>0.0% [0.0%, 65.8%]</td></tr></table>
+<p class="muted">Generated deterministically by local scripted probes.</p>
+</main></body></html>

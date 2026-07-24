@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://loopkit.local/run.schema.json",
+  "title": "loopkit Probe Run",
+  "type": "object",
+  "required": ["run_id", "task_id", "probe", "expected", "observed", "evidence_tier"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "task_id": {"type": "string"},
+    "probe": {"type": "string"},
+    "expected": {"type": "boolean"},
+    "observed": {"type": "boolean"},
+    "evidence_tier": {"enum": ["bundled-oracle", "declared-oracle", "constructed", "oracle-free", "UNDETERMINED"]},
+    "cost_usd": {"type": "number"},
+    "model_calls": {"type": "integer"}
+  }
+}
+

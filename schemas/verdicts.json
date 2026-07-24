@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "verdicts": [
+    "TASK_UNSOLVABLE",
+    "TASK_UNFAILABLE",
+    "TASK_DEGENERATE",
+    "GRADER_FP",
+    "GRADER_FN",
+    "LABEL_ERROR",
+    "WEAK_GRADER",
+    "ENV_DEFECT",
+    "POLICY_DEFECT",
+    "UNDETERMINED"
+  ],
+  "notes": "Vendored loopkit vocabulary; no live service dependency."
+}
+
