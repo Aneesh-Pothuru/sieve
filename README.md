@@ -31,6 +31,8 @@ TRUST-ADJUSTED SCORE  80% -> 65–90%
 Scripted probes and local graders make the path network-free and keyless.
 The root Pages entry is `docs/index.html`.
 
+![SIEVE FlawedBench audit report](docs/assets/demo.jpg)
+
 ## Audit a suite
 
 ```bash
@@ -71,4 +73,3 @@ whether an FP estimate is a lower bound.
 
 The authoritative build brief is copied to [docs/BRIEF.md](docs/BRIEF.md).
 See [LIMITS.md](LIMITS.md) before using a result to make a decision.
-
