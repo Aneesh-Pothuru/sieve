@@ -14,7 +14,7 @@
       "detail": "accepted 1/3 constructed wrong answers",
       "evidence_tier": "declared-oracle",
       "fp_lower_bound": true,
-      "reproducer": "sieve audit . --task task-03",
+      "reproducer": "sieve audit flawedbench --task task-03",
       "secondary": [],
       "severity": "high",
       "task_id": "task-03",
@@ -24,7 +24,7 @@
       "detail": "declared oracle solution rejected by the grader",
       "evidence_tier": "declared-oracle",
       "fp_lower_bound": false,
-      "reproducer": "sieve audit . --task task-07",
+      "reproducer": "sieve audit flawedbench --task task-07",
       "secondary": [],
       "severity": "high",
       "task_id": "task-07",
@@ -34,7 +34,7 @@
       "detail": "3/3 null/refuse/echo probes accepted",
       "evidence_tier": "declared-oracle",
       "fp_lower_bound": false,
-      "reproducer": "sieve audit . --task task-12",
+      "reproducer": "sieve audit flawedbench --task task-12",
       "secondary": [],
       "severity": "critical",
       "task_id": "task-12",
@@ -44,7 +44,7 @@
       "detail": "trusted oracle answer rejected; keyed answer is a label-error candidate",
       "evidence_tier": "bundled-oracle",
       "fp_lower_bound": false,
-      "reproducer": "sieve audit . --task task-15",
+      "reproducer": "sieve audit flawedbench --task task-15",
       "secondary": [
         "LABEL_ERROR"
       ],
@@ -56,7 +56,7 @@
       "detail": "accepted 4/6 constructed wrong answers",
       "evidence_tier": "declared-oracle",
       "fp_lower_bound": true,
-      "reproducer": "sieve audit . --task task-19",
+      "reproducer": "sieve audit flawedbench --task task-19",
       "secondary": [],
       "severity": "critical",
       "task_id": "task-19",
@@ -387,6 +387,7 @@
   },
   "metadata": {
     "ci": "Wilson score interval, 95%",
+    "decision_status": "DETERMINED",
     "fp_interpretation": "lower bound over constructed mutations",
     "red_flags": [
       {

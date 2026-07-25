@@ -1,11 +1,6 @@
-from __future__ import annotations
-
-import html
-from pathlib import Path
-
-from .models import AuditResult
-
-STYLE = """
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width"><title>SIEVE · FlawedBench</title>
+<style>
 :root{
   --bg:#0b0c09;--panel:#141610;--panel-2:#1a1d14;--line:#34382a;
   --text:#faf9ef;--muted:#a6a68e;--faint:#6f725e;--yellow:#e8ee72;
@@ -117,80 +112,74 @@ border-radius:0;background:var(--text);color:#fff}
 box-shadow:5px 5px 0 #ddd4bd}.panel-head{border-color:var(--text)}
 th{background:var(--yellow);color:var(--text)}th,td{border-color:var(--line)}
 tbody tr:hover{background:#fff6bd}.footer{border-color:var(--text)}
-"""
-
-
-def render(result: AuditResult, output: str | Path) -> Path:
-    finding_cards = "".join(
-        f"""<article class="card"><div class="finding-top">
-        <span class="task-id">{html.escape(item.task_id)}</span>
-        <span class="severity">{html.escape(item.severity)}</span></div>
-        <h3>{html.escape(item.verdict)}</h3><p>{html.escape(item.detail)}</p>
-        <div class="evidence"><span>secondary <strong>{html.escape(', '.join(item.secondary) or '—')}</strong></span>
-        <span>evidence <strong>{html.escape(item.evidence_tier)}</strong></span>
-        <span>FP lower bound <strong>{'yes' if item.fp_lower_bound else 'no'}</strong></span></div>
-        <code>{html.escape(item.reproducer)}</code></article>"""
-        for item in result.findings
-    )
-    rows = "".join(
-        "<tr>"
-        f"<td>{html.escape(task_id)}</td>"
-        f"<td>{values['fp'].failures}/{values['fp'].trials}</td>"
-        f"<td class='rate'>{values['fp'].rate:.1%} [{values['fp'].low:.1%}, {values['fp'].high:.1%}]</td>"
-        f"<td>{values['fn'].failures}/{values['fn'].trials}</td>"
-        f"<td class='rate'>{values['fn'].rate:.1%} [{values['fn'].low:.1%}, {values['fn'].high:.1%}]</td>"
-        "</tr>"
-        for task_id, values in result.grader_rates.items()
-    )
-    band = result.trust_band
-    decision_undetermined = result.metadata.get("decision_status") == "UNDETERMINED"
-    band_value = (
-        f"""UNDETERMINED <span>{band['low']:.0%}–{band['high']:.0%} from
-        observed probes · {result.abstention_rate:.1%} probe abstention</span>"""
-        if decision_undetermined
-        else (
-            f"""{band['low']:.0%}–{band['high']:.0%}
-            <span>from reported {band['reported']:.0%}</span>"""
-        )
-    )
-    document = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width"><title>SIEVE · {html.escape(result.suite_name)}</title>
-<style>{STYLE}</style></head><body><header class="topbar"><div class="brand">
+</style></head><body><header class="topbar"><div class="brand">
 <span class="brand-mark">S</span>SIEVE</div><div class="topmeta">
 <span>evaluator assurance / audit 001</span><span class="complete">audit complete</span>
 </div></header><main><section class="hero"><div class="hero-copy">
 <p class="eyebrow">Eval infrastructure audit · Journey 0</p>
-<h1>{html.escape(result.suite_name)} under evidence.</h1>
-<p class="lede">{result.task_count} tasks were challenged for solvability,
+<h1>FlawedBench under evidence.</h1>
+<p class="lede">20 tasks were challenged for solvability,
 failability, label quality, and grader behavior. Every finding below retains
 its evidence tier and exact reproducer.</p></div><aside class="band-panel">
 <p class="section-label">Trust-adjusted sensitivity</p><div class="band-value">
-{band_value}</div>
+65%–90%
+            <span>from reported 80%</span></div>
 <div class="band-track" aria-label="Reported score and trust-adjusted band">
-<span class="band-range" style="left:{band['low'] * 100:.1f}%;width:{(band['high'] - band['low']) * 100:.1f}%"></span>
-<span class="band-marker" style="left:{band['reported'] * 100:.1f}%"></span></div>
+<span class="band-range" style="left:65.0%;width:25.0%"></span>
+<span class="band-marker" style="left:80.0%"></span></div>
 <div class="scale"><span>0%</span><span>reported score</span><span>100%</span></div>
 <p>This is a transparent sensitivity band, not a confidence interval.
-{"It is not decision-grade while probes remain undetermined." if decision_undetermined else ""}</p>
+</p>
 </aside></section><section class="audit-strip" aria-label="Audit summary">
-<div class="audit-metric"><strong>{len(result.findings)}</strong><span>findings</span></div>
-<div class="audit-metric"><strong>{result.budget['used']}/{result.budget['limit']}</strong><span>probe budget</span></div>
-<div class="audit-metric"><strong>{result.budget['skipped']}</strong><span>skipped probes</span></div>
-<div class="audit-metric"><strong>{result.abstention_rate:.1%}</strong><span>abstention rate</span></div>
+<div class="audit-metric"><strong>5</strong><span>findings</span></div>
+<div class="audit-metric"><strong>165/200</strong><span>probe budget</span></div>
+<div class="audit-metric"><strong>0</strong><span>skipped probes</span></div>
+<div class="audit-metric"><strong>0.0%</strong><span>abstention rate</span></div>
 <div class="audit-metric"><strong>$0</strong><span>keyless run</span></div>
 </section><div class="section-head"><div><p class="section-label">Defect register</p>
 <h2>Findings</h2></div><p>Primary verdict · evidence · reproducer</p></div>
-<section class="grid">{finding_cards}</section><div class="section-head"><div>
+<section class="grid"><article class="card"><div class="finding-top">
+        <span class="task-id">task-03</span>
+        <span class="severity">high</span></div>
+        <h3>GRADER_FP</h3><p>accepted 1/3 constructed wrong answers</p>
+        <div class="evidence"><span>secondary <strong>—</strong></span>
+        <span>evidence <strong>declared-oracle</strong></span>
+        <span>FP lower bound <strong>yes</strong></span></div>
+        <code>sieve audit flawedbench --task task-03</code></article><article class="card"><div class="finding-top">
+        <span class="task-id">task-07</span>
+        <span class="severity">high</span></div>
+        <h3>TASK_UNSOLVABLE</h3><p>declared oracle solution rejected by the grader</p>
+        <div class="evidence"><span>secondary <strong>—</strong></span>
+        <span>evidence <strong>declared-oracle</strong></span>
+        <span>FP lower bound <strong>no</strong></span></div>
+        <code>sieve audit flawedbench --task task-07</code></article><article class="card"><div class="finding-top">
+        <span class="task-id">task-12</span>
+        <span class="severity">critical</span></div>
+        <h3>TASK_UNFAILABLE</h3><p>3/3 null/refuse/echo probes accepted</p>
+        <div class="evidence"><span>secondary <strong>—</strong></span>
+        <span>evidence <strong>declared-oracle</strong></span>
+        <span>FP lower bound <strong>no</strong></span></div>
+        <code>sieve audit flawedbench --task task-12</code></article><article class="card"><div class="finding-top">
+        <span class="task-id">task-15</span>
+        <span class="severity">high</span></div>
+        <h3>GRADER_FN</h3><p>trusted oracle answer rejected; keyed answer is a label-error candidate</p>
+        <div class="evidence"><span>secondary <strong>LABEL_ERROR</strong></span>
+        <span>evidence <strong>bundled-oracle</strong></span>
+        <span>FP lower bound <strong>no</strong></span></div>
+        <code>sieve audit flawedbench --task task-15</code></article><article class="card"><div class="finding-top">
+        <span class="task-id">task-19</span>
+        <span class="severity">critical</span></div>
+        <h3>WEAK_GRADER</h3><p>accepted 4/6 constructed wrong answers</p>
+        <div class="evidence"><span>secondary <strong>—</strong></span>
+        <span>evidence <strong>declared-oracle</strong></span>
+        <span>FP lower bound <strong>yes</strong></span></div>
+        <code>sieve audit flawedbench --task task-19</code></article></section><div class="section-head"><div>
 <p class="section-label">Grader calibration</p><h2>Measured FP/FN · Wilson 95% CI</h2>
 </div><p>FP is a lower bound over constructed mutations.</p></div>
 <section class="panel"><div class="panel-head"><h2>Per-task grader behavior</h2>
 <span>counts before rates</span></div><div class="scroll"><table><thead><tr>
 <th>task</th><th>FP count</th><th>FP rate [CI]</th><th>FN count</th><th>FN rate [CI]</th>
-</tr></thead><tbody>{rows}</tbody></table></div></section>
+</tr></thead><tbody><tr><td>task-01</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-02</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-03</td><td>1/3</td><td class='rate'>33.3% [6.1%, 79.2%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-04</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-05</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-06</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-07</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>1/1</td><td class='rate'>100.0% [20.7%, 100.0%]</td></tr><tr><td>task-08</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-09</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-10</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-11</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-12</td><td>4/4</td><td class='rate'>100.0% [51.0%, 100.0%]</td><td>0/1</td><td class='rate'>0.0% [0.0%, 79.3%]</td></tr><tr><td>task-13</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-14</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-15</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>2/2</td><td class='rate'>100.0% [34.2%, 100.0%]</td></tr><tr><td>task-16</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-17</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-18</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-19</td><td>4/6</td><td class='rate'>66.7% [30.0%, 90.3%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr><tr><td>task-20</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td><td>0/2</td><td class='rate'>0.0% [0.0%, 65.8%]</td></tr></tbody></table></div></section>
 <footer class="footer"><span>Generated deterministically by local scripted probes.</span>
 <span>FlawedBench is synthetic regression evidence, not an external benchmark claim.</span></footer>
-</main></body></html>"""
-    destination = Path(output)
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(document, encoding="utf-8")
-    return destination
+</main></body></html>

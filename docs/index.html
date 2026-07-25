@@ -1,8 +1,292 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
-<meta http-equiv="refresh" content="0; url=demo/index.html">
-<title>SIEVE demo</title></head>
-<body><p><a href="demo/index.html">Open the SIEVE FlawedBench audit</a>.</p></body>
-</html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sieve audits the tasks, graders, and labels behind model and agent evaluations.">
+  <meta name="theme-color" content="#f7f3e7">
+  <title>Sieve — the eval for your evals</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="site-header">
+    <a class="wordmark" href="#top" aria-label="Sieve home">
+      <span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>SIEVE</span>
+      <small>Evaluator assurance</small>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    <nav id="site-nav" class="site-nav" aria-label="Primary navigation">
+      <a href="#problem">The problem</a>
+      <a href="#method">Method</a>
+      <a href="#proof">Evidence</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#about">About</a>
+    </nav>
+    <a class="header-cta" href="demo/">Open audit desk <span aria-hidden="true">↗</span></a>
+  </header>
 
+  <main id="content">
+    <section class="hero" id="top">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <p class="kicker"><span>Specification 01</span> Eval infrastructure assurance</p>
+          <h1>Your evaluator<br>deserves an<br><em>evaluation.</em></h1>
+          <p class="hero-lede">Sieve challenges benchmark tasks, answer keys, and graders before their scores influence a model decision. It finds tests that cannot be solved, cannot be failed, or cannot grade reliably.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="demo/">Audit FlawedBench <span aria-hidden="true">→</span></a>
+            <a class="text-link" href="#method">Read the assurance method</a>
+          </div>
+          <ul class="proof-points" aria-label="Demo properties">
+            <li><strong>20</strong><span>audited tasks</span></li>
+            <li><strong>165</strong><span>local probes</span></li>
+            <li><strong>$0</strong><span>keyless demo</span></li>
+          </ul>
+        </div>
+
+        <div class="dossier" aria-label="FlawedBench assurance dossier preview">
+          <div class="paper paper-back" aria-hidden="true"></div>
+          <article class="paper paper-main">
+            <div class="dossier-head">
+              <div>
+                <span class="micro">SIEVE / AUDIT 001</span>
+                <h2>FlawedBench</h2>
+              </div>
+              <span class="audit-stamp">5<br><small>findings</small></span>
+            </div>
+            <div class="score-sheet">
+              <div class="reported-score">
+                <span>Reported</span>
+                <strong>80%</strong>
+              </div>
+              <div class="band-block">
+                <span>Trust-adjusted sensitivity</span>
+                <strong>65–90%</strong>
+                <div class="ruler" aria-hidden="true">
+                  <i style="left:65%"></i><i style="left:80%"></i><i style="left:90%"></i>
+                  <b style="left:65%;width:25%"></b>
+                </div>
+                <small>Not a confidence interval</small>
+              </div>
+            </div>
+            <ol class="finding-ledger">
+              <li><span>03</span><b>GRADER_FP</b><em>High</em></li>
+              <li><span>07</span><b>TASK_UNSOLVABLE</b><em>High</em></li>
+              <li><span>12</span><b>TASK_UNFAILABLE</b><em>Critical</em></li>
+              <li><span>15</span><b>GRADER_FN + LABEL_ERROR</b><em>High</em></li>
+              <li><span>19</span><b>WEAK_GRADER</b><em>Critical</em></li>
+            </ol>
+            <div class="dossier-foot">
+              <span>Evidence tier retained</span>
+              <span>Exact reproducer attached</span>
+            </div>
+          </article>
+          <span class="verified-stamp" aria-hidden="true">PROBED<br>LOCALLY</span>
+        </div>
+      </div>
+      <div class="calibration-rule" aria-hidden="true"></div>
+    </section>
+
+    <section class="problem section" id="problem">
+      <div class="section-number">01</div>
+      <div class="section-intro">
+        <p class="kicker">The problem</p>
+        <h2>A score is only as sound as the machinery that produced it.</h2>
+      </div>
+      <div class="problem-grid">
+        <p class="big-copy">Most eval systems measure the model. Sieve measures the test: whether the task is valid, the oracle is credible, and the grader rejects the wrong things while accepting the right ones.</p>
+        <div class="failure-stack">
+          <article>
+            <span class="index">A</span>
+            <div><h3>Broken task</h3><p>The oracle cannot pass, a null response passes, or the scenario is degenerate.</p></div>
+          </article>
+          <article>
+            <span class="index">B</span>
+            <div><h3>Broken grader</h3><p>Constructed wrong answers are accepted or valid variants are rejected.</p></div>
+          </article>
+          <article>
+            <span class="index">C</span>
+            <div><h3>Broken label</h3><p>The reference answer disagrees with trusted evidence, hiding a false negative.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="method section section-yellow" id="method">
+      <div class="section-number">02</div>
+      <div class="section-intro">
+        <p class="kicker">Assurance method</p>
+        <h2>Four probe stations. One evidence chain.</h2>
+        <p>Sieve runs cheap red flags first, spends a declared budget on probes, and refuses to turn missing evidence into false certainty.</p>
+      </div>
+      <ol class="method-flow">
+        <li>
+          <span class="method-no">01</span>
+          <div class="method-symbol symbol-oracle" aria-hidden="true"></div>
+          <h3>Prove solvable</h3>
+          <p>Run a declared or bundled oracle. A rejected oracle is a task or label defect candidate.</p>
+          <small>ORACLE → GRADER</small>
+        </li>
+        <li>
+          <span class="method-no">02</span>
+          <div class="method-symbol symbol-null" aria-hidden="true"></div>
+          <h3>Prove failable</h3>
+          <p>Try empty, refusal, and prompt-echo agents. Passing null behavior exposes an unfailable task.</p>
+          <small>NULL × REFUSE × ECHO</small>
+        </li>
+        <li>
+          <span class="method-no">03</span>
+          <div class="method-symbol symbol-mutate" aria-hidden="true"></div>
+          <h3>Mutate the answer</h3>
+          <p>Feed plausible-but-wrong answers to estimate a grader false-positive lower bound.</p>
+          <small>WRONG → FP [WILSON 95%]</small>
+        </li>
+        <li>
+          <span class="method-no">04</span>
+          <div class="method-symbol symbol-variant" aria-hidden="true"></div>
+          <h3>Vary the correct</h3>
+          <p>Use legitimate variants to measure false negatives and surface answer-key errors.</p>
+          <small>CORRECT → FN [WILSON 95%]</small>
+        </li>
+      </ol>
+    </section>
+
+    <section class="proof section" id="proof">
+      <div class="section-number">03</div>
+      <div class="section-intro">
+        <p class="kicker">Proof, not promise</p>
+        <h2>The bundled benchmark is deliberately flawed—and exactly reproducible.</h2>
+        <p>FlawedBench contains 20 deterministic local tasks and five seeded defects. Sieve finds all five in the canonical audit.</p>
+      </div>
+
+      <div class="proof-layout">
+        <article class="chart-card wide">
+          <div class="card-head">
+            <div><span class="micro">Figure 01</span><h3>Grader error profile</h3></div>
+            <span class="legend"><i class="swatch fp"></i> False positive <i class="swatch fn"></i> False negative</span>
+          </div>
+          <div class="bar-chart" role="img" aria-label="False positive and false negative rates for five finding tasks">
+            <div class="chart-axis"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+            <div class="bar-row"><b>task-03</b><span><i class="bar fp" style="width:33.3%"></i></span><em>33.3% FP</em></div>
+            <div class="bar-row"><b>task-07</b><span><i class="bar fn" style="width:100%"></i></span><em>100% FN</em></div>
+            <div class="bar-row"><b>task-12</b><span><i class="bar fp" style="width:100%"></i></span><em>100% FP</em></div>
+            <div class="bar-row"><b>task-15</b><span><i class="bar fn" style="width:100%"></i></span><em>100% FN</em></div>
+            <div class="bar-row"><b>task-19</b><span><i class="bar fp" style="width:66.7%"></i></span><em>66.7% FP</em></div>
+          </div>
+          <p class="chart-note">Rates are based on constructed mutations and correct variants. The application shows counts and Wilson 95% intervals for every task.</p>
+        </article>
+
+        <article class="chart-card band-card">
+          <div class="card-head"><div><span class="micro">Figure 02</span><h3>Trust band</h3></div></div>
+          <div class="band-visual">
+            <span class="band-low">65%</span><span class="band-high">90%</span>
+            <div class="band-line"><i></i><b></b></div>
+            <strong>80%</strong><small>reported score</small>
+          </div>
+          <p>Validity, FP, and FN findings turn a single reported score into an explicit sensitivity range.</p>
+        </article>
+
+        <article class="chart-card matrix-card">
+          <div class="card-head"><div><span class="micro">Figure 03</span><h3>Probe confusion</h3></div></div>
+          <div class="mini-matrix" aria-label="Aggregated grader confusion matrix">
+            <span></span><b>Grader pass</b><b>Grader fail</b>
+            <b>Correct</b><strong class="good">35</strong><strong class="bad">3</strong>
+            <b>Wrong</b><strong class="bad">9</strong><strong class="good">38</strong>
+          </div>
+          <p>Correct variants and wrong mutations stay separate, so aggregate accuracy cannot hide the error direction.</p>
+        </article>
+      </div>
+
+      <div class="evidence-cta">
+        <div>
+          <span class="audit-stamp stamp-small">LIVE<br><small>fixture</small></span>
+          <div><h3>Inspect the entire audit, task by task.</h3><p>Change the budget, withhold oracles, vary mutation coverage, step through probes, filter findings, copy reproducers, and export the evidence package.</p></div>
+        </div>
+        <a class="button button-ink" href="demo/">Launch audit desk <span aria-hidden="true">→</span></a>
+      </div>
+    </section>
+
+    <section class="architecture section" id="architecture">
+      <div class="section-number">04</div>
+      <div class="section-intro">
+        <p class="kicker">Architecture</p>
+        <h2>A small, inspectable core with explicit boundaries.</h2>
+      </div>
+      <div class="architecture-board">
+        <div class="source-column">
+          <span>Input surfaces</span>
+          <b>Local benchmark</b>
+          <b>Terrarium tasks</b>
+          <b class="future">Scenario suite <small>P1</small></b>
+        </div>
+        <div class="connector" aria-hidden="true">→</div>
+        <div class="core-column">
+          <span>Sieve core</span>
+          <b>Suite adapter</b>
+          <b>Budgeted probe battery</b>
+          <b>Wilson interval engine</b>
+          <b>Finding + reproducer store</b>
+        </div>
+        <div class="connector" aria-hidden="true">→</div>
+        <div class="output-column">
+          <span>Evidence surfaces</span>
+          <b>HTML + JSON report</b>
+          <b>SQLite findings</b>
+          <b>Trust-adjusted band</b>
+        </div>
+      </div>
+      <div class="implementation-grid">
+        <article><span>01</span><h3>Deterministic</h3><p>The shipped probes and graders are local, scripted, and network-free. The demo costs $0.</p></article>
+        <article><span>02</span><h3>Adapter-based</h3><p>A normalized task contract separates suite ingestion from audit logic.</p></article>
+        <article><span>03</span><h3>Budget-aware</h3><p>Every grader call spends one unit. Skipped work and abstention are always reported.</p></article>
+        <article><span>04</span><h3>Evidence-tiered</h3><p>Declared and bundled oracles are labeled. Missing trusted evidence becomes undetermined.</p></article>
+      </div>
+    </section>
+
+    <section class="about section section-ink" id="about">
+      <div class="section-number">05</div>
+      <div class="section-intro">
+        <p class="kicker">About the thesis</p>
+        <h2>Sieve scores your scorer.<br>It does not score your model.</h2>
+      </div>
+      <div class="about-grid">
+        <div class="about-copy">
+          <p>Evaluation infrastructure is the decision layer beneath model launches, benchmark claims, and research roadmaps. Sieve treats that layer like production code: adversarially test it, retain exact evidence, and state uncertainty before anyone optimizes against a misleading number.</p>
+          <a class="text-link inverse" href="https://github.com/Aneesh-Pothuru/sieve">View the implementation on GitHub <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="limits">
+          <h3>Honest operating limits</h3>
+          <details open>
+            <summary>What is proven today?</summary>
+            <p>The deterministic FlawedBench regression fixture: 20 tasks, five known defect classes, 165 of 200 probes used, and a 65–90% sensitivity band from a reported 80% score.</p>
+          </details>
+          <details>
+            <summary>What remains undetermined?</summary>
+            <p>Sieve cannot prove semantic correctness without trusted oracle evidence. Unknown grader exploits are outside the mutation denominator, so FP is a lower bound.</p>
+          </details>
+          <details>
+            <summary>What is not implemented?</summary>
+            <p>LLM-generated probes, simulation fleet mode, automatic changed-task discovery, and a disclosed real public-benchmark audit remain future work.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta">
+      <div>
+        <span class="micro">Journey zero / deterministic</span>
+        <h2>Don’t trust the score.<br><em>Audit the test.</em></h2>
+      </div>
+      <a class="button button-primary" href="demo/">Open FlawedBench audit <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="wordmark" href="#top"><span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>SIEVE</span></a>
+    <p>Open-source evaluator assurance. Synthetic evidence is labeled; uncertainty is retained.</p>
+    <div><a href="demo/">Demo</a><a href="demo/report.html">Generated report</a><a href="https://github.com/Aneesh-Pothuru/sieve">GitHub</a><a href="BRIEF.md">Build brief</a></div>
+  </footer>
+</body>
+</html>

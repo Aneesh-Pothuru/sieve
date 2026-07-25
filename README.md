@@ -16,7 +16,8 @@ make demo
 ```
 
 The command audits bundled FlawedBench—20 tasks with five seeded defects—and
-writes `docs/demo/index.html`:
+writes the authoritative generated report to `docs/demo/report.html` plus its
+machine-readable evidence to `docs/demo/audit.json`:
 
 ```text
 TASK_UNSOLVABLE  task-07
@@ -29,9 +30,10 @@ TRUST-ADJUSTED SCORE  80% -> 65–90%
 ```
 
 Scripted probes and local graders make the path network-free and keyless.
-The root Pages entry is `docs/index.html`.
-
-![SIEVE FlawedBench audit report](docs/assets/demo.jpg)
+The root Pages entry is a complete product explanation in `docs/index.html`;
+`docs/demo/index.html` is an interactive deterministic replay of the same
+fixture. The browser demo makes the workflow inspectable, while the Python
+audit and generated report remain authoritative.
 
 ## Audit a suite
 
@@ -72,4 +74,7 @@ whether an FP estimate is a lower bound.
 - `make lint` performs dependency-free AST, whitespace, and JSON checks.
 
 The authoritative build brief is copied to [docs/BRIEF.md](docs/BRIEF.md).
+The role-based site flows are documented in
+[docs/USER_JOURNEYS.md](docs/USER_JOURNEYS.md), and the primary-source design
+review is in [docs/COMPETITIVE_UI.md](docs/COMPETITIVE_UI.md).
 See [LIMITS.md](LIMITS.md) before using a result to make a decision.

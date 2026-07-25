@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import shlex
 from typing import Any
 
 from .grader import grade
@@ -29,13 +30,17 @@ def _finding(
     severity: str = "high",
     secondary: tuple[str, ...] = (),
     fp_lower_bound: bool = False,
+    suite_reference: str = ".",
 ) -> Finding:
     return Finding(
         task_id=task.id,
         verdict=verdict,
         severity=severity,
         detail=detail,
-        reproducer=f"sieve audit . --task {task.id}",
+        reproducer=(
+            f"sieve audit {shlex.quote(suite_reference)} "
+            f"--task {shlex.quote(task.id)}"
+        ),
         evidence_tier=task.evidence_tier,
         secondary=secondary,
         fp_lower_bound=fp_lower_bound,
@@ -47,8 +52,14 @@ def audit_suite(
     tasks: list[AuditTask],
     budget_limit: int = 200,
     reported_score: float = 0.80,
+    suite_reference: str | None = None,
 ) -> AuditResult:
     budget = Budget(budget_limit)
+    reproducer_suite = (
+        suite_reference
+        if suite_reference is not None
+        else "flawedbench" if suite_name == "FlawedBench" else "."
+    )
     findings: list[Finding] = []
     rates = {}
     red_flags: list[dict[str, str]] = []
@@ -60,7 +71,13 @@ def audit_suite(
     for task in tasks:
         existing: Finding | None = None
         if len(prompts[task.prompt.strip().casefold()]) > 1:
-            existing = _finding(task, "TASK_DEGENERATE", "duplicate normalized prompt", "medium")
+            existing = _finding(
+                task,
+                "TASK_DEGENERATE",
+                "duplicate normalized prompt",
+                "medium",
+                suite_reference=reproducer_suite,
+            )
             red_flags.append({"task_id": task.id, "flag": "duplicate_prompt"})
         if task.grader.get("mode") == "always_pass":
             red_flags.append({"task_id": task.id, "flag": "accepts_anything"})
@@ -83,12 +100,14 @@ def audit_suite(
                     "GRADER_FN",
                     "trusted oracle answer rejected; keyed answer is a label-error candidate",
                     secondary=("LABEL_ERROR",),
+                    suite_reference=reproducer_suite,
                 )
             else:
                 existing = _finding(
                     task,
                     "TASK_UNSOLVABLE",
                     "declared oracle solution rejected by the grader",
+                    suite_reference=reproducer_suite,
                 )
 
         null_answers = [None, "I cannot help", task.prompt]
@@ -100,6 +119,7 @@ def audit_suite(
                 "TASK_UNFAILABLE",
                 f"{accepted_nulls}/{len(null_answers)} null/refuse/echo probes accepted",
                 "critical",
+                suite_reference=reproducer_suite,
             )
 
         wrong_results = [
@@ -125,6 +145,7 @@ def audit_suite(
                     f"accepted {false_accepts}/{len(wrong_observed)} constructed wrong answers",
                     "critical",
                     fp_lower_bound=True,
+                    suite_reference=reproducer_suite,
                 )
             else:
                 existing = _finding(
@@ -132,12 +153,14 @@ def audit_suite(
                     "GRADER_FP",
                     f"accepted {false_accepts}/{len(wrong_observed)} constructed wrong answers",
                     fp_lower_bound=True,
+                    suite_reference=reproducer_suite,
                 )
         if existing is None and false_rejects:
             existing = _finding(
                 task,
                 "GRADER_FN",
                 f"rejected {false_rejects}/{len(correct_observed)} correct variants",
+                suite_reference=reproducer_suite,
             )
         if existing is not None:
             findings.append(existing)
@@ -187,6 +210,7 @@ def audit_suite(
             "ci": "Wilson score interval, 95%",
             "fp_interpretation": "lower bound over constructed mutations",
             "trust_band_interpretation": "sensitivity band, not confidence interval",
+            "decision_status": "UNDETERMINED" if abstentions else "DETERMINED",
             "red_flags": red_flags,
         },
     )

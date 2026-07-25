@@ -8,6 +8,7 @@ from pathlib import Path
 
 from sieve.adapters import TerrariumFormatAdapter, load_suite
 from sieve.audit import audit_suite
+from sieve.cli import main
 from sieve.models import AuditTask
 from sieve.report import render
 from sieve.stats import trust_adjusted_band, wilson
@@ -29,6 +30,10 @@ class SieveTests(unittest.TestCase):
         self.assertEqual(actual, expected)
         self.assertEqual(result.budget["skipped"], 0)
         self.assertEqual(result.abstention_rate, 0.0)
+        self.assertEqual(
+            result.findings[0].reproducer,
+            "sieve audit flawedbench --task task-03",
+        )
 
     def test_flawedbench_trust_band_is_exact_demo_claim(self) -> None:
         name, tasks = load_suite(FLAWEDBENCH)
@@ -51,6 +56,7 @@ class SieveTests(unittest.TestCase):
         self.assertGreater(result.budget["skipped"], 0)
         self.assertGreater(result.abstention_rate, 0)
         self.assertEqual(result.budget["skipped_reason"], "budget exhausted")
+        self.assertEqual(result.metadata["decision_status"], "UNDETERMINED")
 
     def test_missing_oracle_abstains_but_runs_oracle_free_probes(self) -> None:
         task = AuditTask(
@@ -67,6 +73,14 @@ class SieveTests(unittest.TestCase):
         self.assertEqual(result.budget["oracle_undetermined"], 1)
         self.assertGreater(result.abstention_rate, 0)
         self.assertGreater(result.budget["used"], 0)
+        self.assertEqual(result.metadata["decision_status"], "UNDETERMINED")
+
+    def test_cli_rejects_an_empty_or_missing_task_selection(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(SystemExit, "no auditable tasks"):
+                main(["audit", directory])
+        with self.assertRaisesRegex(SystemExit, "task not found"):
+            main(["audit", str(FLAWEDBENCH), "--task", "task-missing"])
 
     def test_terrarium_adapter_is_static_and_standalone(self) -> None:
         source = ROOT / "fixtures" / "terrarium" / "inbox-triage.yaml"

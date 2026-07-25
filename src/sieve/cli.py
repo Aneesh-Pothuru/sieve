@@ -19,13 +19,31 @@ DEMO_SUITE = (
 
 
 def _run_audit(args: argparse.Namespace, default_suite: Path | None = None) -> int:
-    suite_path = Path(args.suite) if getattr(args, "suite", None) else default_suite
+    requested_suite = getattr(args, "suite", None)
+    suite_path = Path(requested_suite) if requested_suite else default_suite
     if suite_path is None:
         raise ValueError("suite path is required")
+    if requested_suite == "flawedbench" and not suite_path.exists():
+        suite_path = DEMO_SUITE
     suite_name, tasks = load_suite(suite_path, args.format)
     if getattr(args, "task", None):
         tasks = [task for task in tasks if task.id == args.task]
-    result = audit_suite(suite_name, tasks, args.budget, args.reported_score)
+        if not tasks:
+            raise SystemExit(f"task not found in suite: {args.task}")
+    if not tasks:
+        raise SystemExit(f"suite contains no auditable tasks: {suite_path}")
+    suite_reference = (
+        "flawedbench"
+        if suite_path.resolve() == DEMO_SUITE.resolve()
+        else str(suite_path)
+    )
+    result = audit_suite(
+        suite_name,
+        tasks,
+        args.budget,
+        args.reported_score,
+        suite_reference=suite_reference,
+    )
     if args.output:
         render(result, args.output)
     if args.json_output:
@@ -50,6 +68,11 @@ def _run_audit(args: argparse.Namespace, default_suite: Path | None = None) -> i
         f"trust-adjusted: {band['reported']:.0%} -> "
         f"{band['low']:.0%}–{band['high']:.0%}"
     )
+    if result.metadata["decision_status"] == "UNDETERMINED":
+        print(
+            "decision status: UNDETERMINED "
+            f"({result.abstention_rate:.1%} probe abstention)"
+        )
     return 0
 
 
@@ -70,7 +93,7 @@ def parser() -> argparse.ArgumentParser:
         if name == "demo":
             command.set_defaults(
                 handler=lambda args: _run_audit(args, DEMO_SUITE),
-                output="docs/demo/index.html",
+                output="docs/demo/report.html",
             )
         else:
             command.set_defaults(handler=_run_audit)
