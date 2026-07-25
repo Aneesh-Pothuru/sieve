@@ -395,6 +395,148 @@
         "task_id": "task-12"
       }
     ],
+    "task_states": {
+      "task-01": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-02": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-03": {
+        "budget_used": 9,
+        "finding": "GRADER_FP",
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "FINDING"
+      },
+      "task-04": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-05": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-06": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-07": {
+        "budget_used": 7,
+        "finding": "TASK_UNSOLVABLE",
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "FINDING"
+      },
+      "task-08": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-09": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-10": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-11": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-12": {
+        "budget_used": 9,
+        "finding": "TASK_UNFAILABLE",
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "FINDING"
+      },
+      "task-13": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-14": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-15": {
+        "budget_used": 8,
+        "finding": "GRADER_FN",
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "FINDING"
+      },
+      "task-16": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-17": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-18": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      },
+      "task-19": {
+        "budget_used": 12,
+        "finding": "WEAK_GRADER",
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "FINDING"
+      },
+      "task-20": {
+        "budget_used": 8,
+        "finding": null,
+        "oracle_available": true,
+        "probes_skipped": 0,
+        "status": "PASS"
+      }
+    },
     "trust_band_interpretation": "sensitivity band, not confidence interval"
   },
   "suite_name": "FlawedBench",

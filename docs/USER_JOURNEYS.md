@@ -27,6 +27,14 @@ Terrarium inbox-triage adapter fixture so users can inspect the separate
 one-task static-contract journey; the UI repeats the implementation's explicit
 boundary that the Terrarium world is not executed.
 
+The audit desk also offers an explicit **local service** mode. An operator
+starts `sieve serve`, checks readiness from the audit desk, and then runs the
+same configuration through `POST /v1/audits`. In this mode the interface does
+not animate or substitute fixture output: it waits for the actual Python
+auditor, hydrates the returned task states/findings/rates, and exports the
+persisted API envelope. A failed service call remains visibly failed and never
+falls back to replay data.
+
 ## Benchmark owner
 
 **Goal:** determine whether a suite is safe to publish or use for a model
@@ -45,6 +53,16 @@ decision.
 7. Exports the structured audit for review or a remediation issue.
 8. Runs the reproducer in the Python implementation, fixes or excludes the
    defective task/grader, and re-audits.
+
+### Actual execution path
+
+1. Installs the package and starts the loopback service.
+2. Verifies health/readiness and the SQLite/config boundary.
+3. Switches the audit desk from fixture replay to local service.
+4. Runs the audit and receives an immutable run ID only after persistence.
+5. Retrieves the run or its indexed findings through the API after restart.
+6. Uses task-level and overall `UNDETERMINED` states to block incomplete
+   decisions.
 
 ### Pass path
 

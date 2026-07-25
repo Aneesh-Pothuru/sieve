@@ -15,6 +15,22 @@ jobs:
       - run: make lint
       - run: make test
       - run: make demo
+      - name: Verify installed CLI and packaged fixture
+        run: |
+          python3 -m pip install .
+          install_root="$(mktemp -d)"
+          cd "$install_root"
+          sieve audit flawedbench --task task-03 \
+            --output report.html --json-output audit.json
+          test -s report.html
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          audit = json.loads(Path("audit.json").read_text(encoding="utf-8"))
+          assert audit["task_count"] == 1
+          assert audit["findings"][0]["verdict"] == "GRADER_FP"
+          PY
       - name: Confirm Pages entry and exact report
         run: |
           test -s docs/index.html

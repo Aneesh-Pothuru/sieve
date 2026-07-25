@@ -148,6 +148,12 @@
     criticalFilterCount: document.querySelector("#critical-filter-count"),
     highFilterCount: document.querySelector("#high-filter-count"),
     runIdentity: document.querySelector("#run-identity"),
+    executionMode: document.querySelector("#execution-mode"),
+    serviceEndpoint: document.querySelector("#service-endpoint"),
+    connectService: document.querySelector("#connect-service"),
+    executionStatus: document.querySelector("#execution-status"),
+    executionBadge: document.querySelector("#execution-badge"),
+    executionHelp: document.querySelector("#execution-help"),
     drawer: document.querySelector("#evidence-drawer"),
     drawerTitle: document.querySelector("#drawer-title"),
     drawerContent: document.querySelector("#drawer-content"),
@@ -166,7 +172,9 @@
     history: [{ low: .8, high: .8, reported: .8 }],
     findingFilter: "all",
     taskView: "all",
-    returnFocus: null
+    returnFocus: null,
+    liveEnvelope: null,
+    liveConnected: false
   };
 
   function escapeHtml(value) {
@@ -188,6 +196,14 @@
 
   function activeTasks() {
     return els.benchmark.value === "terrarium" ? TERRARIUM_TASKS : TASKS;
+  }
+
+  function isLive() {
+    return els.executionMode.value === "live";
+  }
+
+  function serviceUrl(path) {
+    return `${els.serviceEndpoint.value.trim().replace(/\/+$/, "")}${path}`;
   }
 
   function wrongTrials(task) {
@@ -251,9 +267,13 @@
     els.status.className = `audit-status ${mode}`;
     els.statusText.textContent = label;
     els.start.disabled = mode === "running" || state.reviewed === activeTasks().length;
-    els.pause.disabled = mode !== "running";
-    els.step.disabled = mode === "running" || state.reviewed === activeTasks().length;
-    els.start.innerHTML = mode === "paused" ? 'Resume audit <span aria-hidden="true">▶</span>' : 'Start audit <span aria-hidden="true">▶</span>';
+    els.pause.disabled = isLive() || mode !== "running";
+    els.step.disabled = isLive() || mode === "running" || state.reviewed === activeTasks().length;
+    els.start.innerHTML = isLive()
+      ? 'Run actual audit <span aria-hidden="true">▶</span>'
+      : mode === "paused"
+        ? 'Resume audit <span aria-hidden="true">▶</span>'
+        : 'Start replay <span aria-hidden="true">▶</span>';
   }
 
   function resetAudit(announce = false) {
@@ -265,12 +285,17 @@
     state.results = {};
     state.events = [];
     state.history = [{ low: .8, high: .8, reported: .8 }];
+    state.liveEnvelope = null;
     setStatus("idle", "Ready to run");
     updateAll();
     if (announce) showToast("Audit reset to configured probe plan.");
   }
 
   function startAudit() {
+    if (isLive()) {
+      runLiveAudit();
+      return;
+    }
     if (state.reviewed >= activeTasks().length) return;
     setStatus("running", `Probing task ${String(state.reviewed + 1).padStart(2, "0")}`);
     state.timer = window.setInterval(() => {
@@ -280,6 +305,152 @@
         state.timer = null;
       }
     }, 520);
+  }
+
+  async function checkLiveService(announce = true) {
+    els.executionStatus.innerHTML = "<strong>Connecting.</strong> Checking readiness and persistence.";
+    try {
+      const response = await fetch(serviceUrl("/readyz"), {
+        headers: { "X-Request-ID": `sieve-ui-${Date.now()}` }
+      });
+      const payload = await response.json();
+      if (!response.ok || payload.status !== "ready") {
+        throw new Error("service is not ready");
+      }
+      state.liveConnected = true;
+      els.executionBadge.className = "fixture-label live";
+      els.executionBadge.innerHTML = "<i></i> Local auditor ready";
+      els.executionStatus.innerHTML = "<strong>Connected.</strong> Runs execute in Python and persist to SQLite.";
+      if (announce) showToast("Local Sieve service is ready.");
+      return true;
+    } catch (error) {
+      state.liveConnected = false;
+      els.executionBadge.className = "fixture-label error";
+      els.executionBadge.innerHTML = "<i></i> Local auditor offline";
+      els.executionStatus.innerHTML = `<strong>Unavailable.</strong> Start <code>sieve serve</code> and retry. ${escapeHtml(error.message)}`;
+      if (announce) showToast("Local service unavailable; fixture replay still works.");
+      return false;
+    }
+  }
+
+  function apiFinding(item, rates) {
+    const rateType = ["GRADER_FP", "WEAK_GRADER", "TASK_UNFAILABLE"].includes(item.verdict)
+      ? "FP"
+      : ["GRADER_FN", "TASK_UNSOLVABLE"].includes(item.verdict)
+        ? "FN"
+        : null;
+    const interval = rateType ? rates?.[rateType.toLowerCase()] : null;
+    return {
+      verdict: item.verdict,
+      secondary: item.secondary?.join(" + ") || null,
+      severity: item.severity,
+      detail: item.detail,
+      evidence: item.evidence_tier,
+      lowerBound: item.fp_lower_bound,
+      rateType,
+      failures: interval?.failures,
+      trials: interval?.trials,
+      low: interval?.low,
+      rate: interval?.rate,
+      high: interval?.high
+    };
+  }
+
+  function hydrateLiveRun(envelope) {
+    const result = envelope.result;
+    const tasks = activeTasks();
+    const findings = Object.fromEntries(result.findings.map(item => [item.task_id, item]));
+    const taskStates = result.metadata.task_states || {};
+    state.liveEnvelope = envelope;
+    state.used = result.budget.used;
+    state.reviewed = tasks.length;
+    state.results = {};
+    state.events = [];
+    tasks.forEach(task => {
+      const taskState = taskStates[task.id] || {};
+      const item = findings[task.id];
+      if (taskState.status === "UNDETERMINED") {
+        state.results[task.id] = {
+          status: "undetermined",
+          finding: {
+            verdict: "UNDETERMINED",
+            severity: "undetermined",
+            detail: taskState.probes_skipped
+              ? `${taskState.probes_skipped} planned probes were skipped after the budget was exhausted.`
+              : "Trusted oracle evidence was unavailable to the actual auditor.",
+            evidence: taskState.probes_skipped ? "budget-exhausted" : "oracle-free",
+            lowerBound: false
+          }
+        };
+      } else if (item) {
+        state.results[task.id] = {
+          status: "finding",
+          finding: apiFinding(item, result.grader_rates[task.id])
+        };
+      } else {
+        state.results[task.id] = { status: "pass", finding: null };
+      }
+      const observed = state.results[task.id];
+      state.events.unshift({
+        task: task.id,
+        text: observed.finding?.detail || `${taskState.budget_used || 0} actual probes matched declared expectations`,
+        outcome: observed.finding?.verdict || "PASS",
+        kind: observed.finding ? "finding" : "pass"
+      });
+    });
+    state.history = [
+      { low: result.trust_band.reported, high: result.trust_band.reported, reported: result.trust_band.reported },
+      { ...result.trust_band }
+    ];
+    state.selected = result.findings[0]?.task_id || tasks[0].id;
+    setStatus(
+      "complete",
+      result.metadata.decision_status === "UNDETERMINED"
+        ? "Persisted with abstentions"
+        : "Actual audit persisted"
+    );
+    els.runIdentity.textContent = envelope.run_id.toUpperCase();
+    updateAll();
+  }
+
+  async function runLiveAudit() {
+    if (state.mode === "running") return;
+    setStatus("running", "Calling local auditor");
+    const suite = config().benchmark === "terrarium"
+      ? "fixtures/terrarium/inbox-triage.yaml"
+      : "flawedbench";
+    try {
+      const response = await fetch(serviceUrl("/v1/audits"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Request-ID": `sieve-ui-${Date.now()}`
+        },
+        body: JSON.stringify({
+          suite,
+          format: config().benchmark === "terrarium" ? "terrarium" : "auto",
+          budget: config().budget,
+          reported_score: .8
+        })
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error?.message || `service returned ${response.status}`);
+      }
+      state.liveConnected = true;
+      els.executionBadge.className = "fixture-label live";
+      els.executionBadge.innerHTML = "<i></i> Actual run persisted";
+      els.executionStatus.innerHTML = `<strong>Persisted.</strong> Run <code>${escapeHtml(payload.run_id)}</code> is retrievable from the local API.`;
+      hydrateLiveRun(payload);
+      showToast("Actual audit completed and persisted.");
+    } catch (error) {
+      state.liveConnected = false;
+      setStatus("idle", "Local service unavailable");
+      els.executionBadge.className = "fixture-label error";
+      els.executionBadge.innerHTML = "<i></i> Local auditor offline";
+      els.executionStatus.innerHTML = `<strong>Run failed.</strong> ${escapeHtml(error.message)} Start <code>sieve serve</code> or return to fixture replay.`;
+      showToast("Actual audit failed; no replay data was substituted.");
+    }
   }
 
   function pauseAudit() {
@@ -432,7 +603,9 @@
     els.budgetOutput.textContent = `${cfg.budget} runs`;
     els.budgetPreview.style.width = `${Math.min(100, cost / cfg.budget * 100)}%`;
     const gap = cfg.budget < cost;
-    els.planNote.textContent = `${cost} projected local grader calls · ${cfg.oracle ? "manifest oracles" : "oracles withheld"} · ${gap ? `${cost - cfg.budget} calls beyond budget` : "no model calls, $0"}.`;
+    els.planNote.textContent = isLive()
+      ? `${cost} projected grader calls · actual Python auditor · immutable SQLite run · ${gap ? `${cost - cfg.budget} calls beyond budget` : "$0, keyless"}.`
+      : `${cost} projected local grader calls · ${cfg.oracle ? "manifest oracles" : "oracles withheld"} · ${gap ? `${cost - cfg.budget} calls beyond budget` : "no model calls, $0"}.`;
   }
 
   function renderMetrics() {
@@ -446,7 +619,7 @@
     els.progressMetric.textContent = `${state.reviewed} / ${tasks.length}`;
     els.progressDetail.textContent = state.reviewed ? `${Math.round(state.reviewed / tasks.length * 100)}% reviewed` : "No tasks probed";
     els.budgetMetric.textContent = `${state.used} / ${cfg.budget}`;
-    els.budgetDetail.textContent = `${projectedCost()} projected`;
+    els.budgetDetail.textContent = state.liveEnvelope ? "Actual service usage" : `${projectedCost()} projected`;
     els.findingMetric.textContent = String(findings.length);
     els.findingDetail.textContent = state.reviewed === tasks.length ? `${findings.length} evidenced exceptions` : `${expectedFindings.length} seeded defects`;
     els.undeterminedMetric.textContent = String(undetermined.length);
@@ -459,13 +632,19 @@
     els.allFilterCount.textContent = String(observedExceptions.length);
     els.criticalFilterCount.textContent = String(observedExceptions.filter(item => item.severity === "critical").length);
     els.highFilterCount.textContent = String(observedExceptions.filter(item => item.severity === "high").length);
-    if (cfg.benchmark === "terrarium") {
+    if (state.liveEnvelope) {
+      els.runIdentity.textContent = state.liveEnvelope.run_id.toUpperCase();
+    } else if (cfg.benchmark === "terrarium") {
       els.suiteTitle.innerHTML = 'Terrarium task <em>under test.</em>';
-      els.suiteDescription.textContent = "Inspect the static adapter contract for a declared inbox-triage task. The world is not executed in v0.1.";
+      els.suiteDescription.textContent = isLive()
+        ? "Run the installed auditor against the vendored Terrarium contract and persist the result. The world is not executed in v0.1."
+        : "Inspect the static adapter contract for a declared inbox-triage task. The world is not executed in v0.1.";
       els.runIdentity.textContent = "SV-002 / TERRARIUM:INBOX";
     } else {
       els.suiteTitle.innerHTML = 'FlawedBench <em>under test.</em>';
-      els.suiteDescription.textContent = "Challenge a known 20-task fixture, inspect each grader decision, and see how evidence changes the score you can responsibly claim.";
+      els.suiteDescription.textContent = isLive()
+        ? "Call the installed Python auditor, persist the full evidence envelope, and inspect its actual findings in this interface."
+        : "Challenge a known 20-task fixture, inspect each grader decision, and see how evidence changes the score you can responsibly claim.";
       els.runIdentity.textContent = "SV-001 / FLAWEDBENCH";
     }
   }
@@ -727,8 +906,8 @@
       <section class="evidence-block"><h3>Probe trace</h3><ol class="trace-list">${traces.map(trace => `<li><span>${trace[0]}</span><b>${escapeHtml(trace[1])}</b><em class="${traceClass(trace[0], trace[2])}">${trace[2]}</em></li>`).join("")}</ol></section>
       <section class="evidence-block"><h3>Observed verdict</h3><pre>${finding ? escapeHtml(`${finding.verdict}${finding.secondary ? ` + ${finding.secondary}` : ""}\n${finding.detail}`) : result ? "PASS\nNo exception observed under this configuration." : "QUEUED\nNo probe evidence has been observed yet."}</pre></section>
       <section class="evidence-block"><h3>Exact reproducer</h3><div class="reproducer-box"><code>${escapeHtml(reproducerFor(task.id))}</code><button class="button ghost" type="button" data-copy-reproducer>Copy</button></div></section>
-      <section class="evidence-block"><h3>Interpretation boundary</h3><pre>Browser interaction: deterministic fixture replay
-Authoritative execution: Python audit core
+      <section class="evidence-block"><h3>Interpretation boundary</h3><pre>Browser interaction: ${isLive() ? "local-service result viewer" : "deterministic fixture replay"}
+Authoritative execution: ${isLive() ? "persisted Python audit run" : "Python audit core; replay is illustrative"}
 FP interpretation: lower bound over constructed mutations
 Trust band: sensitivity analysis, not confidence interval</pre></section>
     </div>`;
@@ -752,6 +931,7 @@ Trust band: sensitivity analysis, not confidence interval</pre></section>
   }
 
   function auditPayload() {
+    if (state.liveEnvelope) return state.liveEnvelope;
     const band = trustBand();
     return {
       schema_version: "sieve.demo.v1",
@@ -816,12 +996,39 @@ Trust band: sensitivity analysis, not confidence interval</pre></section>
   els.pause.addEventListener("click", pauseAudit);
   els.step.addEventListener("click", stepAudit);
   els.reset.addEventListener("click", () => resetAudit(true));
+  els.connectService.addEventListener("click", () => checkLiveService());
+  els.executionMode.addEventListener("change", () => {
+    if (isLive()) {
+      if (els.scenario.value === "oracle-gap") els.scenario.value = "canonical";
+      els.oracle.value = "manifest";
+      els.mutation.value = "3";
+      els.oracle.disabled = true;
+      els.mutation.disabled = true;
+      els.executionHelp.textContent = "Live mode calls the installed Python auditor and persists the returned evidence. Step and pause are replay-only controls.";
+      els.executionBadge.className = "fixture-label live";
+      els.executionBadge.innerHTML = "<i></i> Local auditor not checked";
+      els.executionStatus.innerHTML = "<strong>Live mode.</strong> Check the loopback service, then run the actual audit.";
+    } else {
+      els.oracle.disabled = false;
+      els.mutation.disabled = false;
+      state.liveConnected = false;
+      els.executionHelp.textContent = "Configure a deterministic browser replay. Select local service to call the installed auditor and persist a real run.";
+      els.executionBadge.className = "fixture-label";
+      els.executionBadge.innerHTML = "<i></i> Fixture replay";
+      els.executionStatus.innerHTML = "<strong>Replay mode.</strong> No backend request is made.";
+    }
+    resetAudit();
+  });
   els.budgetInput.addEventListener("input", () => {
     resetAudit();
     updatePlan();
   });
   [els.oracle, els.mutation].forEach(control => control.addEventListener("change", () => resetAudit(true)));
   els.scenario.addEventListener("change", () => {
+    if (isLive() && els.scenario.value === "oracle-gap") {
+      els.scenario.value = "canonical";
+      showToast("Oracle withholding is a fixture-replay control; live mode audits the suite contract as stored.");
+    }
     if (els.scenario.value === "canonical") {
       els.budgetInput.value = "200";
       els.oracle.value = "manifest";

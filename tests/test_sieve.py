@@ -57,6 +57,14 @@ class SieveTests(unittest.TestCase):
         self.assertGreater(result.abstention_rate, 0)
         self.assertEqual(result.budget["skipped_reason"], "budget exhausted")
         self.assertEqual(result.metadata["decision_status"], "UNDETERMINED")
+        self.assertEqual(
+            result.metadata["task_states"]["task-01"]["status"],
+            "PASS",
+        )
+        self.assertEqual(
+            result.metadata["task_states"]["task-02"]["status"],
+            "UNDETERMINED",
+        )
 
     def test_missing_oracle_abstains_but_runs_oracle_free_probes(self) -> None:
         task = AuditTask(
@@ -74,6 +82,10 @@ class SieveTests(unittest.TestCase):
         self.assertGreater(result.abstention_rate, 0)
         self.assertGreater(result.budget["used"], 0)
         self.assertEqual(result.metadata["decision_status"], "UNDETERMINED")
+        self.assertEqual(
+            result.metadata["task_states"]["oracle-free"]["status"],
+            "UNDETERMINED",
+        )
 
     def test_cli_rejects_an_empty_or_missing_task_selection(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

@@ -35,6 +35,13 @@ The root Pages entry is a complete product explanation in `docs/index.html`;
 fixture. The browser demo makes the workflow inspectable, while the Python
 audit and generated report remain authoritative.
 
+The audit desk has two explicit execution modes:
+
+- **Fixture replay** runs entirely on GitHub Pages and makes no backend claim.
+- **Local service** calls an installed `sieve serve`, runs the actual Python
+  auditor, and renders the immutable evidence envelope returned after SQLite
+  persistence.
+
 ## Audit a suite
 
 ```bash
@@ -50,6 +57,50 @@ Every grader call consumes one run from the explicit budget. The output
 reports skipped probes; it never silently truncates. The TERRARIUM adapter
 validates and audits the vendored declarative format without importing or
 calling a deployed TERRARIUM service.
+
+## Install and run the local service
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install .
+
+sieve serve
+```
+
+In another terminal:
+
+```bash
+curl --fail http://127.0.0.1:8765/readyz
+curl --fail-with-body \
+  -H 'Content-Type: application/json' \
+  -d '{"suite":"flawedbench","budget":200,"reported_score":0.8}' \
+  http://127.0.0.1:8765/v1/audits
+```
+
+This is the production path for local integrations: the request executes the
+actual adapter and probe engine, persists the complete result plus indexed
+findings to SQLite, and returns a retrievable run ID. Audit runs survive
+service restarts.
+
+The default bind is loopback-only. Suite paths must stay inside the configured
+data root. Request sizes and budgets are capped, unknown fields are rejected,
+and non-loopback binds require an explicit `--allow-remote`. Remote operation
+still requires an authenticated TLS proxy; SIEVE does not pretend otherwise.
+
+Configuration and endpoint contracts are documented in
+[docs/API.md](docs/API.md). Copy `.env.example` to configure the process.
+
+### Container
+
+```bash
+docker compose up --build
+curl --fail http://127.0.0.1:8765/readyz
+```
+
+The Compose profile publishes only on loopback, drops Linux capabilities,
+uses a read-only root filesystem, mounts suites read-only, and keeps SQLite in
+a named volume.
 
 ## Adapter contract
 
@@ -70,7 +121,8 @@ whether an FP estimate is a lower bound.
 - `make reproduce-flawedbench` regenerates the exact five-finding report.
 - `make reproduce-grader-rates` regenerates machine-readable grader rates.
 - `make test` verifies the exact seeded findings, Wilson CIs, budget skips,
-  trust-band math, adapters, report, and SQLite findings store.
+  trust-band math, adapters, report, SQLite persistence, live HTTP journeys,
+  restart recovery, request validation, and path confinement.
 - `make lint` performs dependency-free AST, whitespace, and JSON checks.
 
 The authoritative build brief is copied to [docs/BRIEF.md](docs/BRIEF.md).

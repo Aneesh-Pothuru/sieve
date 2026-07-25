@@ -25,6 +25,21 @@
   gallery remain external work and must not be claimed from this repository.
 - FlawedBench has 20 tasks but only one canonical seed of most defect classes;
   it cannot by itself support a class-wise recall confidence claim.
+- The local HTTP service executes audits synchronously in one process. It has
+  durable SQLite evidence and concurrent request handling, but not a
+  distributed queue, cancellation, admission control beyond budget/body
+  limits, multi-node coordination, or retention policies.
+- The service deliberately has no application-owned identity, authorization,
+  or TLS. It binds to loopback by default and refuses a remote bind unless the
+  operator explicitly opts in. Remote deployment requires an authenticated
+  reverse proxy and a threat model.
+- The configured Pages origin can call the loopback service through an exact
+  CORS allowlist. Browser private-network and mixed-content policies vary; the
+  CLI and HTTP API remain the authoritative integration surfaces when a
+  browser blocks that connection.
+- SQLite run storage is append-only through the API, but automated backup,
+  encryption at rest, deletion/retention workflows, and external object
+  storage are not implemented.
 
 The demo has no skipped probes at budget 200 and therefore an abstention rate
 of 0%. Lower budgets report skipped probes and a non-zero `UNDETERMINED` rate.

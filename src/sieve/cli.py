@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .adapters import load_suite
 from .audit import audit_suite
+from .config import ServiceConfig
 from .report import render
 from .storage import save_audit
 
@@ -97,11 +98,40 @@ def parser() -> argparse.ArgumentParser:
             )
         else:
             command.set_defaults(handler=_run_audit)
+    serve_command = commands.add_parser(
+        "serve",
+        help="run the keyless local SIEVE HTTP service",
+    )
+    serve_command.add_argument("--host")
+    serve_command.add_argument("--port", type=int)
+    serve_command.add_argument("--db")
+    serve_command.add_argument("--data-root")
+    serve_command.add_argument(
+        "--allow-remote",
+        action="store_true",
+        default=None,
+        help="allow a non-loopback bind; add authentication upstream",
+    )
+    serve_command.set_defaults(handler=_run_server)
     return root
+
+
+def _run_server(args: argparse.Namespace) -> int:
+    from .server import serve
+
+    config = ServiceConfig.from_env(
+        host=args.host,
+        port=args.port,
+        database=args.db,
+        data_root=args.data_root,
+        allow_remote=args.allow_remote,
+    )
+    serve(config)
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
-    if args.budget < 0:
+    if getattr(args, "budget", 0) < 0:
         raise SystemExit("--budget must be non-negative")
     return int(args.handler(args))

@@ -31,3 +31,20 @@ For reported score S, the band is:
 `[0,1]`. FlawedBench has FP-affected=10%, FN-affected=5%, invalid=10%, so
 80% becomes 65–90%. It is deliberately not called a statistical CI.
 
+## 2026-07-25 — The production integration is a local, keyless HTTP service
+
+`sieve serve` exposes the real adapter and audit core rather than duplicating
+the fixture replay in a server. Accepted audits are committed as immutable
+SQLite envelopes before a `201` response. The static Pages application keeps
+its deterministic replay, but labels it as replay and offers an explicit local
+service mode for actual execution.
+
+The service is standard-library-only and loopback-first. Non-loopback binding
+requires an explicit opt-in because the v0.1 service does not own
+authentication or TLS.
+
+## 2026-07-25 — Task-level uncertainty is part of the result contract
+
+Audit metadata now records `PASS`, `FINDING`, or `UNDETERMINED` plus per-task
+used and skipped probes. This lets API clients preserve budget and oracle gaps
+instead of inferring a pass from the absence of a finding.

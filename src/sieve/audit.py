@@ -63,6 +63,7 @@ def audit_suite(
     findings: list[Finding] = []
     rates = {}
     red_flags: list[dict[str, str]] = []
+    task_states: dict[str, dict[str, Any]] = {}
     oracle_undetermined = 0
     prompts: dict[str, list[str]] = {}
     for task in tasks:
@@ -70,6 +71,8 @@ def audit_suite(
 
     for task in tasks:
         existing: Finding | None = None
+        used_before = budget.used
+        skipped_before = budget.skipped
         if len(prompts[task.prompt.strip().casefold()]) > 1:
             existing = _finding(
                 task,
@@ -164,6 +167,18 @@ def audit_suite(
             )
         if existing is not None:
             findings.append(existing)
+        skipped = budget.skipped - skipped_before
+        task_states[task.id] = {
+            "status": (
+                "UNDETERMINED"
+                if skipped or not oracle_available
+                else "FINDING" if existing is not None else "PASS"
+            ),
+            "budget_used": budget.used - used_before,
+            "probes_skipped": skipped,
+            "oracle_available": bool(oracle_available),
+            "finding": existing.verdict if existing is not None else None,
+        }
 
     fp_tasks = sum(
         finding.verdict in {"GRADER_FP", "WEAK_GRADER"} for finding in findings
@@ -211,6 +226,7 @@ def audit_suite(
             "fp_interpretation": "lower bound over constructed mutations",
             "trust_band_interpretation": "sensitivity band, not confidence interval",
             "decision_status": "UNDETERMINED" if abstentions else "DETERMINED",
+            "task_states": task_states,
             "red_flags": red_flags,
         },
     )

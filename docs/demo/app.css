@@ -94,6 +94,15 @@ main { min-width: 0; padding: 34px clamp(18px, 3vw, 48px) 100px; }
 .control-heading .panel-no, .panel-head .panel-no { width: 25px; height: 25px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid var(--ink); background: var(--yellow); color: var(--ink); }
 .control-heading h2, .panel-head h2 { margin: 0; font: 700 17px "Iowan Old Style", Georgia, serif; }
 .control-heading p { margin: 1px 0 0; color: var(--muted); font-size: 9px; }
+.execution-bar { display: grid; grid-template-columns: 1fr 1.4fr auto 1.5fr; gap: 0; align-items: end; border-bottom: 1px solid var(--ink); background: var(--yellow); }
+.execution-bar label { min-width: 0; padding: 11px 14px; border-right: 1px solid var(--ink); }
+.execution-bar label > span { display: block; margin-bottom: 5px; font: 800 7px ui-monospace, monospace; text-transform: uppercase; letter-spacing: .08em; }
+.execution-bar select, .execution-bar input { width: 100%; height: 35px; padding: 0 8px; border: 1px solid var(--ink); border-radius: 0; background: var(--white); color: var(--ink); font-size: 10px; }
+.execution-bar .button { align-self: center; margin: 0 12px; background: var(--white); }
+.execution-bar p { align-self: stretch; display: grid; align-content: center; margin: 0; padding: 10px 14px; border-left: 1px solid var(--ink); font-size: 9px; }
+.execution-bar p strong { display: block; font: 900 8px ui-monospace, monospace; text-transform: uppercase; }
+.fixture-label.live i { background: var(--blue); }
+.fixture-label.error i { background: var(--coral); }
 .controls { display: grid; grid-template-columns: 1.15fr 1fr 1fr 1fr 1.2fr; gap: 0; border-bottom: 1px solid var(--ink); }
 .controls label { min-width: 0; padding: 14px; border-right: 1px solid var(--line); }
 .controls label:last-child { border: 0; }
@@ -247,6 +256,8 @@ main { min-width: 0; padding: 34px clamp(18px, 3vw, 48px) 100px; }
 .toast.show { transform: translateY(0); opacity: 1; }
 
 @media (max-width: 1240px) {
+  .execution-bar { grid-template-columns: 1fr 1fr auto; }
+  .execution-bar p { grid-column: 1/-1; border-top: 1px solid var(--ink); border-left: 0; }
   .controls { grid-template-columns: repeat(3,1fr); }
   .controls label { border-bottom: 1px solid var(--line); }
   .live-grid { grid-template-columns: 1fr 1.45fr; }
@@ -263,6 +274,9 @@ main { min-width: 0; padding: 34px clamp(18px, 3vw, 48px) 100px; }
   .workspace-head { align-items: flex-start; flex-direction: column; }
   .audit-status { width: 100%; }
   .controls { grid-template-columns: 1fr 1fr; }
+  .execution-bar { grid-template-columns: 1fr 1fr; }
+  .execution-bar .button { margin: 10px 12px; }
+  .execution-bar p { grid-column: auto; border-top: 0; border-left: 1px solid var(--ink); }
   .run-controls { align-items: stretch; flex-wrap: wrap; }
   .run-controls p { width: 100%; margin: 7px 0 0; }
   .metric-ribbon { grid-template-columns: repeat(2,1fr); }
@@ -276,7 +290,10 @@ main { min-width: 0; padding: 34px clamp(18px, 3vw, 48px) 100px; }
   .app-brand { border: 0; padding: 0 10px; }
   .app-brand small, #copy-audit { display: none; }
   .header-actions { padding-right: 8px; }
-  .controls, .metric-ribbon, .finding-register, .assumption-grid { grid-template-columns: 1fr; }
+  .controls, .execution-bar, .metric-ribbon, .finding-register, .assumption-grid { grid-template-columns: 1fr; }
+  .execution-bar label { border-right: 0; border-bottom: 1px solid var(--ink); }
+  .execution-bar .button { margin: 10px 12px; }
+  .execution-bar p { grid-column: auto; border-top: 1px solid var(--ink); border-left: 0; }
   .controls label { border-right: 0; }
   .metric-ribbon .score-metric { grid-column: auto; }
   .run-controls .button { flex: 1; }

@@ -21,7 +21,7 @@
       <span>Audit</span><strong id="run-identity">SV-001 / FLAWEDBENCH</strong>
     </div>
     <div class="header-actions">
-      <span class="fixture-label"><i></i> Deterministic fixture</span>
+      <span class="fixture-label" id="execution-badge"><i></i> Fixture replay</span>
       <button class="button ghost" id="copy-audit" type="button">Copy audit</button>
       <button class="button ink" id="export-audit" type="button">Export JSON</button>
     </div>
@@ -60,7 +60,22 @@
       <section class="control-board" aria-labelledby="control-title">
         <div class="control-heading">
           <span class="panel-no">A</span>
-          <div><h2 id="control-title">Probe plan</h2><p>Configure a deterministic browser replay. The Python CLI remains authoritative.</p></div>
+          <div><h2 id="control-title">Probe plan</h2><p id="execution-help">Configure a deterministic browser replay. Select local service to call the installed auditor and persist a real run.</p></div>
+        </div>
+        <div class="execution-bar">
+          <label>
+            <span>Execution</span>
+            <select id="execution-mode">
+              <option value="fixture">Fixture replay / Pages-safe</option>
+              <option value="live">Local service / actual auditor</option>
+            </select>
+          </label>
+          <label class="endpoint-control">
+            <span>Service endpoint</span>
+            <input id="service-endpoint" type="url" value="http://127.0.0.1:8765" spellcheck="false" aria-describedby="execution-status">
+          </label>
+          <button class="button ghost" id="connect-service" type="button">Check service</button>
+          <p id="execution-status" role="status" aria-live="polite"><strong>Replay mode.</strong> No backend request is made.</p>
         </div>
         <div class="controls">
           <label>
