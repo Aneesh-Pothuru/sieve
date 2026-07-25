@@ -1,0 +1,31 @@
+{
+  "id": "inbox-triage",
+  "instruction": "Read the refund policy, triage Maya's CRM case, and email her a response.",
+  "evals": [
+    {
+      "id": "reply-sent",
+      "family": "state",
+      "table": "email_messages",
+      "count": 1
+    }
+  ],
+  "oracle": [
+    {
+      "tool": "email.send",
+      "arguments": {
+        "to": "maya@example.test",
+        "subject": "Refund R-104 triaged"
+      }
+    }
+  ],
+  "mutations": {
+    "reply-sent": [
+      {
+        "tool": "email.search",
+        "arguments": {
+          "query": "Refund request R-104"
+        }
+      }
+    ]
+  }
+}

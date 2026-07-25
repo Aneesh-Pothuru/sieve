@@ -69,7 +69,7 @@ class SieveTests(unittest.TestCase):
         self.assertGreater(result.budget["used"], 0)
 
     def test_terrarium_adapter_is_static_and_standalone(self) -> None:
-        source = ROOT.parent / "terrarium" / "examples" / "tasks" / "inbox-triage.yaml"
+        source = ROOT / "fixtures" / "terrarium" / "inbox-triage.yaml"
         name, tasks = TerrariumFormatAdapter().load(source)
         self.assertTrue(name.startswith("terrarium:"))
         self.assertEqual(len(tasks), 1)

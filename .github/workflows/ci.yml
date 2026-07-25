@@ -19,5 +19,11 @@ jobs:
         run: |
           test -s docs/index.html
           test -s docs/demo/index.html
-          grep -q "20 tasks · 5 findings" docs/demo/index.html
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
 
+          audit = json.loads(Path("docs/demo/audit.json").read_text(encoding="utf-8"))
+          assert audit["task_count"] == 20
+          assert len(audit["findings"]) == 5
+          PY
